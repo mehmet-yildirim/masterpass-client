@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <h5>Kartla Talimat Oluştur</h5>
+    <div class="card card-body">
+        <form action="" method="POST" id="linkcard-form">
+            <div class="modal-body">
+                <div class="form-group">
+                    <p th:inline="text">
+                        [[${msisdn}]] numarasına diğer işyerlerinde kayıtlı kartlar bu işyerine bağlansın mı?
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Evet</button>
+                <a class="btn btn-danger" href="/">Hayır</a>
+            </div>
+            <input type="hidden" th:value="${msisdn}" name="msisdn">
+            <input type="hidden" th:value="${token}" name="token">
+            <input type="hidden" name="sendSmsLanguage" value="eng"/>
+            <input type="hidden" name="sendSms" value="N"/>
+        </form>
+        <form action="" method="POST" id="otp-form" style="display: none">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="otp">OTP şifresi</label>
+                    <input id="otp" type="text" name="validationCode" class="form-control"
+                           placeholder="123456"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/">Vazgeç</a>
+                <button type="submit" class="btn btn-primary">Doğrula</button>
+            </div>
+            <input type="hidden" name="referenceNo" value="00000000"/>
+            <input type="hidden" name="sendSms" value="Y"/>
+            <input type="hidden" name="sendSmsLanguage" value="tur"/>
+            <input type="hidden" name="pinType" value="otp"/>
+        </form>
+        <form action="" method="POST" id="mpin-form" style="display: none">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="otp">PIN kodunu tanımla</label>
+                    <input id="otp" type="text" name="validationCode" class="form-control"
+                           placeholder="123456"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/">Vazgeç</a>
+                <button type="submit" class="btn btn-primary">Tamamla</button>
+            </div>
+            <input type="hidden" name="referenceNo" value="00000000"/>
+            <input type="hidden" name="sendSms" value="Y"/>
+            <input type="hidden" name="sendSmsLanguage" value="tur"/>
+            <input type="hidden" name="pinType" value="mpin"/>
+        </form>
+    </div>
+
+    <script th:inline="javascript" type="text/javascript">
+
+        var config = [[${config}]];
+        MFS.setClientId(config.clientId);
+        MFS.setAddress(config.url);
+
+        var token = [[${token}]];
+        var msisdn = [[${msisdn}]];
+
+        $('#linkcard-form').submit(function (event) {
+            MFS.linkCardToClient($(this), mfsLinkCardResponseHandler);
+            return false;
+        });
+
+        $('#otp-form, #mpin-form').submit(function (event) {
+            MFS.validateTransaction($(this), mfsLinkCardResponseHandler);
+            return false;
+        });
+
+
+        function mfsLinkCardResponseHandler(status, response) {
+            if (response.responseCode == "0000" || response.responseCode == "") {
+
+                alert("Kart kayit basarili");
+            } else {
+
+                $('#register-form, #otp-form, #mpin-form').hide();
+                if (response.responseCode == "5001") { // OTP sor
+                    $('#otp-form').show();
+                } else if (response.responseCode == "5008") { // Masterpass OTP sor
+                    $('#otp-form').show();
+                } else if (response.responseCode == "5010") { // 3D Secure sor
+                    window.location.assign(response.url3D + "&returnUrl=" + "Your Return URL");
+                } else if (response.responseCode == "5015") { // MPIN tanimlanmasini iste
+                    $('#mpin-form').show();
+                    $('#mpin-define-label').show();
+                } else {
+                    $('#register-form').show();
+                    alert(response.responseDescription);
+                }
+            }
+        }
+    </script>
+
+
+</section>
+</body>
+</html>

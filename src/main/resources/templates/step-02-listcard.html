@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+</head>
+
+<body>
+
+<section layout:fragment="content">
+
+    <p th:inline="text">MSISDN: [[${msisdn}]]</p>
+    <p>Abone durumu: <span id="checkMP-result">...</span></p>
+
+    <form action="" method="POST" id="checkMP-form">
+        <input type="hidden" th:value="${msisdn}" name="userId">
+        <input type="hidden" th:value="${token}" name="token">
+        <input type="hidden" name="sendSmsLanguage" value="eng"/>
+        <!-- MFS Check MasterPass operation parameters end -->
+
+        <!-- MFS constant parameters start -->
+        <input type="hidden" name="sendSms" value="N"/>
+        <!-- MFS constant parameters end -->
+    </form>
+
+    <a th:href="@{/register-card(msisdn=${msisdn},config=${config.id})}" type="button" class="btn btn-primary">
+        Kart Ekle
+    </a>
+    <a th:href="@{/link-card(msisdn=${msisdn},config=${config.id})}" type="button" class="btn btn-primary">
+        Kartları bağla
+    </a>
+    <div style="margin: 20px 0">
+        <h5>Kartlarım</h5>
+
+        <table class="table table-ellipsis no-gutters" id="list-cards-table">
+            <tr>
+                <th>Adı</th>
+                <th>Kart no</th>
+                <th></th>
+            </tr>
+            <tr id="row-template">
+                <td class="card-name align-middle">Yükleniyor...</td>
+                <td class="card-no align-middle"></td>
+                <td class="ops align-middle"></td>
+            </tr>
+
+        </table>
+
+    </div>
+
+    <script th:inline="javascript" type="text/javascript">
+
+        var config = [[${config}]];
+        MFS.setClientId(config.clientId);
+        MFS.setAddress(config.url);
+
+        var token = [[${token}]];
+        var msisdn = [[${msisdn}]];
+
+        $('#register-form').submit(function (event) {
+            MFS.register($(this), mfsRegisterResponseHandler);
+            return false;
+        })
+
+
+        $('#checkMP-form').submit(function (event) {
+            MFS.checkMasterPass($(this), mfsCheckCustomerResponseHandler);
+            return false;
+        });
+
+        MFS.listCards(msisdn, token, listCardsResponseHandler);
+
+        function listCardsResponseHandler(statusCode, response) {
+            if (response.responseCode != "0000" && response.responseCode != "") {
+                alert(response.responseDescription);
+                return;
+            }
+            for (var i = 0; i < response.cards.length; i++) {
+                var card = response.cards[i];
+
+                var tpl = $("#row-template").clone().removeAttr("id");
+                tpl.find(".card-name").text(card.Name);
+                tpl.find(".card-no").append(card.Value1);
+                tpl.find(".ops").append(
+                    "<a class='btn btn-link' href='/payment?msisdn=" + msisdn + "&config=" + config.id + "&aliasName=" + card.Name +
+                    "&cardNumber=" + card.Value1 + "'>Ödeme isteği oluştur</a>"
+                );
+
+                tpl.find(".ops").append(
+                    '&nbsp;<a class="btn btn-danger" href="#" onclick="deleteCard(\'' + card.Name + '\')"> Sil</a>'
+                );
+
+                tpl.appendTo($('#list-cards-table'));
+
+
+                //cards += (i + 1) + ". " + card.Name + " - " + card.Value1 + "\n";
+            }
+            $("#row-template").hide();
+            //alert(cards);
+        }
+
+
+        function mfsCheckCustomerResponseHandler(status, response) {
+            if (response.responseCode == "0000" || response.responseCode == "") {
+                //alert(response.accountStatus);
+                $('#checkMP-result').text(response.accountStatus);
+            } else {
+                //alert(response.responseDescription);
+                $('#checkMP-result').text(response.accountStatus);
+            }
+        }
+
+
+        $('#checkMP-form').submit();
+        /*
+        MFS.listCards(msisdn, token, listCardsResponseHandler);
+
+        function listCardsResponseHandler(statusCode, response){
+            if (response.responseCode != "0000" && response.responseCode != "")
+            {
+                alert(response.responseDescription);
+                return;
+            }
+            var cards = "";
+            for (var i = 0; i < response.cards.length; i++) {
+                var card = response.cards[i];
+                cards += (i + 1) + ". " + card.Name + " - " + card.Value1 + "\n";
+            }
+            alert(cards);
+        }
+
+         */
+        function deleteCard(cardName) {
+            console.info(cardName);
+            var formElement = document.createElement("form");
+            formElement.setAttribute('method',"post");
+
+            var msisdnElement = document.createElement("input"); //input element, text
+            msisdnElement.setAttribute('type',"text");
+            msisdnElement.setAttribute('name',"msisdn");
+            msisdnElement.setAttribute('value',msisdn);
+            formElement.appendChild(msisdnElement);
+
+            var referenceNoElement = document.createElement("input"); //input element, text
+            referenceNoElement.setAttribute('type',"text");
+            referenceNoElement.setAttribute('name',"referenceNo");
+            referenceNoElement.setAttribute('value',2356523556);
+            formElement.appendChild(referenceNoElement);
+
+            var sendSmsElement = document.createElement("input"); //input element, text
+            sendSmsElement.setAttribute('type',"text");
+            sendSmsElement.setAttribute('name','sendSms');
+            sendSmsElement.setAttribute('value','N');
+            formElement.appendChild(sendSmsElement);
+
+            var sendSmsLanguageElement = document.createElement("input"); //input element, text
+            sendSmsLanguageElement.setAttribute('type',"text");
+            sendSmsLanguageElement.setAttribute('name','sendSmsLanguage');
+            sendSmsLanguageElement.setAttribute('value','eng');
+            formElement.appendChild(sendSmsLanguageElement);
+
+            var accountAliasNameElement = document.createElement("input"); //input element, text
+            accountAliasNameElement.setAttribute('type',"text");
+            accountAliasNameElement.setAttribute('name','accountAliasName');
+            accountAliasNameElement.setAttribute('value',cardName);
+            formElement.appendChild(accountAliasNameElement);
+
+            var tokenElement = document.createElement("input"); //input element, text
+            tokenElement.setAttribute('type',"text");
+            tokenElement.setAttribute('name',"token");
+            tokenElement.setAttribute('value',token);
+            formElement.appendChild(tokenElement);
+
+            $.blockUI();
+            MFS.deleteCard($(formElement), deleteCardResponseHandler)
+
+            // deleteCard: ["msisdn", "referenceNo", "sendSms", "sendSmsLanguage", "accountAliasName", "token"],
+            // MFS.deleteCard(msisdn,123474934,'N','N','k1',token);
+        }
+
+        function deleteCardResponseHandler(text, response) {
+            stopBlock();
+            window.location.reload();
+        }
+
+    </script>
+
+
+</section>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+
+    <script src="/js/uuid.min.js" type="text/javascript"></script>
+    <script src="/js/vpos-api-client.js" type="text/javascript"></script>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <script src="js/jquery.json-editor.min.js"></script>
+
+    <h5>Ödeme İsteği Oluştur (CommitPurchase)</h5>
+    <div class="card card-body">
+        <form action="" method="POST" id="payment-form">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="msisdn">MSISDN</label>
+                    <input id="msisdn" type="text" name="msisdn" class="form-control"
+                           th:value="${msisdn}" disabled="disabled"/>
+                </div>
+                <div class="form-group">
+                    <label for="msisdn">Merchant ID</label>
+                    <input id="merchantId" type="text" name="merchantId" class="form-control"
+                           th:value="${config.merchantId}" disabled="disabled"/>
+                </div>
+                <div class="form-group">
+                    <label for="listAccountName">Kart adı</label>
+                    <input id="listAccountName" type="text" name="listAccountName" class="form-control"
+                           placeholder="Kart adı" th:value="${aliasName}" disabled="disabled"/>
+                </div>
+                <div class="form-group">
+                    <label for="orderNo">Sipariş No</label>
+                    <input id="orderNo" type="text" name="orderNo" class="form-control"
+                           placeholder="Sipariş No" th:value="${orderNo}"/>
+                </div>
+                <div class="form-group">
+                    <label for="referenceNo">Referans no</label>
+                    <input id="referenceNo" type="text" name="referenceNo" class="form-control"
+                           placeholder="Referans No" th:value="${reqRefNumber}"/>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Tutar (x100)</label>
+                    <input class="form-control" id="amount" name="amount" type="text" value="19000"
+                           placeholder="Tutar"/>
+                </div>
+                <div class="form-group">
+                    <label for="additional-parameters">Ek parametreler</label>
+                    <textarea id="additional-parameters" name="additional-parameters" class="form-control"
+                              style="display: none">
+{
+	"order_shipping": "0",
+	"order_product_name_arr": [
+		"Hijyen Paketi", "h2"
+	],
+	"order_product_code_arr": [
+		"164", "165"
+	],
+	"order_price_arr": [
+		"11000", "5000"
+	],
+	"order_qty_arr": [
+		"1", "2"
+	],
+	"order_product_info_arr": [
+		"27734", "27735"
+	],
+	"order_sub_merchant_keys_arr": [
+		"W7KTqhiX9dvTgOUYUbaNjOTk6LU=", "lP9osKD0SXYrkJf5csZoSVloONk="
+	],
+	"order_sub_merchant_prices_arr": [
+		"11000", "5000"
+	],
+    "order_price_type_arr": [
+		"PHYSICAL", "PHYSICAL"
+	],
+	"order_discount": "2000",
+	"bill_first_name": "Kutlay",
+	"bill_last_name": "Gurcihan",
+	"bill_email": "kutlaygurcihan@gmail.com",
+	"bill_phone": "905353616891",
+	"bill_country_code": "TR",
+	"bill_fax": "",
+	"bill_address": "Logo Sky Çizge Havacılık, Yenibosna Doğu Sanayi Sitesi No:2/20",
+	"bill_address2": "",
+	"bill_zip_code": "",
+	"bill_city": "İSTANBUL (AVRUPA)",
+	"bill_state": "TURKEY",
+	"delivery_first_name": "Büşranur",
+	"delivery_last_name": "Aksu",
+	"delivery_email": "",
+	"delivery_phone": "",
+	"delivery_company": "",
+	"delivery_address": "RAMİ YENİ Mah. PALABIYIK Sk.  16 20 İSTANBUL (AVRUPA) EYÜPSULTAN",
+	"delivery_address2": "",
+	"delivery_zip_code": "",
+	"delivery_city": "İSTANBUL (AVRUPA)",
+	"delivery_state": "EYÜPSULTAN",
+	"delivery_country_code": "TR",
+	"number_time": "",
+	"owner_time": "",
+	"order_timeout": "",
+	"card_program_name": "MASTERCARD",
+	"client_ip": "",
+	"client_time": "",
+	"buyer_id": "905353616891",
+	"identity_number": "41686351802",
+	"last_login_date": "2018-09-17 23:45:06",
+	"registration_date": "2015-09-17 23:45:06",
+	"payment_content": "",
+	"transaction_description": ""
+}
+                    </textarea>
+                </div>
+                <pre id="json-display"></pre>
+            </div>
+            <div class="modal-footer">
+                <a href="/">Vazgeç</a>
+                <button type="submit" class="btn btn-primary">Devam Et</button>
+            </div>
+            <input type="hidden" th:value="'VFTR_' + ${msisdn}" name="userId">
+            <input type="hidden" th:value="${token}" name="token">
+            <input type="hidden" name="sendSmsLanguage" value="tur"/>
+            <input type="hidden" name="sendSms" value="N"/>
+            <input type="hidden" name="actionType" value="A"/>
+            <input type="hidden" name="clientIp" value=""/>
+            <input type="hidden" name="delinkReason" value=""/>
+            <input type="hidden" name="eActionType" value="A"/>
+            <input type="hidden" name="cardTypeFlag" value="05"/>
+            <input type="hidden" name="cpinFlag" value="Y"/>
+            <input type="hidden" name="defaultAccount" value="Y"/>
+            <input type="hidden" name="mmrpConfig" value="110010"/>
+            <input type="hidden" name="identityVerificationFlag" value="Y"/>
+            <input type="hidden" name="mobileAccountConfig" value="MWA"/>
+            <input type="hidden" name="timeZone" value="+03"/>
+        </form>
+        <form action="" method="POST" id="otp-form" style="display: none">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="otp">OTP şifresi</label>
+                    <input id="otp" type="text" name="validationCode" class="form-control"
+                           placeholder="123456"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/">Vazgeç</a>
+                <button type="submit" class="btn btn-primary">Doğrula</button>
+            </div>
+            <input type="hidden" name="referenceNo" value="00000000"/>
+            <input type="hidden" name="sendSms" value="Y"/>
+            <input type="hidden" name="sendSmsLanguage" value="tur"/>
+            <input type="hidden" name="pinType" value="otp"/>
+        </form>
+        <form action="" method="POST" id="mpin-form" style="display: none">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="mpin">PIN kodunu tanımla</label>
+                    <input id="mpin" type="text" name="validationCode" class="form-control"
+                           placeholder="123456"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/">Vazgeç</a>
+                <button type="submit" class="btn btn-primary">Tamamla</button>
+            </div>
+            <input type="hidden" name="referenceNo" value="00000000"/>
+            <input type="hidden" name="sendSms" value="Y"/>
+            <input type="hidden" name="sendSmsLanguage" value="tur"/>
+            <input type="hidden" name="pinType" value="mpin"/>
+        </form>
+
+    </div>
+    <div id="response-token-container" style="display: none">
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="response-token">Ödeme token bilgisi</label>
+                <textarea id="response-token" class="form-control"></textarea>
+            </div>
+            <button onclick="passParamsToVposApi()" class="btn btn-primary float-right">Vpos İsteği Oluştur</button>
+        </div>
+    </div>
+
+    <script th:inline="javascript" type="text/javascript">
+
+        var config = [[${config}]];
+        MFS.setClientId(config.clientId);
+        MFS.setAddress(config.url);
+
+        var token = [[${token}]];
+        var msisdn = [[${msisdn}]];
+
+        var editor = new JsonEditor("#json-display", JSON.parse($('#additional-parameters').text()));
+        editor.load(JSON.parse($('#additional-parameters').text()));
+
+        $('#payment-form').submit(function (event) {
+            var additionalParams = editor.get();
+            MFS.setAdditionalParameters(additionalParams);
+            var formValues = $(this);
+            MFS.purchase(formValues, mfsPurchaseResponseHandler);
+            return false;
+        });
+
+        $('#otp-form, #mpin-form').submit(function (event) {
+            MFS.validateTransaction($(this), mfsPurchaseResponseHandler);
+            return false;
+        });
+
+
+        function mfsPurchaseResponseHandler(status, response) {
+            if (response.responseCode == "0000" || response.responseCode == "") {
+                $('payment-form').hide();
+                $('#response-token-container').show();
+                $('#response-token-container').find("#response-token").text(response.token);
+                document.getElementById('response-token').scrollIntoView();
+            } else {
+
+                $('#payment-form, #otp-form, #mpin-form').hide();
+                if (response.responseCode == "5001") { // OTP sor
+                    $('#otp-form').show();
+                } else if (response.responseCode == "5008") { // Masterpass OTP sor
+                    $('#otp-form').show();
+                } else if (response.responseCode == "5010") { // 3D Secure sor
+                    window.location.assign(response.url3D + "&returnUrl=" + "Your Return URL");
+                } else if (response.responseCode == "5015") { // MPIN tanimlanmasini iste
+                    $('#mpin-form').show();
+                    $('#mpin-define-label').show();
+                } else {
+                    $('#payment-form').show();
+                    alert(response.responseDescription);
+                }
+            }
+        }
+
+        function passParamsToVposApi() {
+            var params = {};
+
+            params.token = $('#response-token-container').find("#response-token").val();
+            params.additionalParameters = editor.get();
+            params.msisdn = msisdn;
+            params.cardNumber = [[${cardNumber}]];
+            params.orderNo = $('#orderNo').val();
+            params.amount = $('#amount').val();
+
+            generateVposApiRequest(params);
+            window.location.href = "/vposRequest";
+        }
+
+
+    </script>
+
+
+</section>
+</body>
+</html>

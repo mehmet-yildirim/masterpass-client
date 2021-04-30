@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+
+    <script src="/js/uuid.min.js" type="text/javascript"></script>
+    <script src="/js/vpos-api-client.js" type="text/javascript"></script>
+    <script src="/js/moment.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+<section class="container-fluid" layout:fragment="content" style="padding: 10px 40px 40px 40px">
+
+    <script src="js/jquery.json-editor.min.js"></script>
+
+    <div class="modal" tabindex="-1" role="dialog" id="reverseModal">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+
+                    <div class="accordion" id="reverseAccordion">
+                        <div class="card">
+                            <div class="card-header p-0" id="headingOne">
+                                <h2 class="mb-0">
+                                    <a class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                       data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Masterpass Payment Provider Response
+                                    </a>
+                                </h2>
+                            </div>
+
+                            <div id="collapseOne" class="collapse" aria-labelledby="headingOne"
+                                 data-parent="#reverseAccordion">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <textarea class="form-control" id="masterpassPaymentProviderResponse"
+                                                  rows="20"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header p-0" id="headingTwo">
+                                <h2 class="mb-0">
+                                    <a class="btn btn-link" type="button" data-toggle="collapse"
+                                       data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                        Vpos Api Reverse İsteği Oluştur
+                                    </a>
+                                </h2>
+                            </div>
+                            <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo"
+                                 data-parent="#reverseAccordion">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="input-group mb-3">
+                                                <select class="form-control" id="orderItems"></select>
+                                                <div class="input-group-append" id="button-addon4">
+                                                    <button class="btn btn-outline-info" type="button"
+                                                            id="sendReverseRequestButton" disabled="disabled"
+                                                            onclick="onClickVposReverse()">Gönder
+                                                    </button>
+                                                    <span class="badge input-group-text"
+                                                          id="vpos-reverse-response-status">
+                                                        <h5 class="mt-1 mb-0" id="vpos-reverse-response-text">000</h5>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <textarea id="vpos-reverse-api-request" class="form-control"
+                                                      style="display: none"></textarea>
+                                            <pre id="json-display-reverse-request" style="height: 390px"></pre>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <textarea id="vpos-reverse-api-response" class="form-control"
+                                                      style="display: none"></textarea>
+                                            <pre id="json-display-reverse-response" style="height: 390px"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer pt-0 pb-0">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5>Vpos Api İsteği Oluştur (CommitPurchase)</h5>
+    <hr/>
+
+    <div class="card card-body mb-3">
+        <form>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label" for="oauth-token">Oauth token bilgisi</label>
+                <div class="col-sm-10">
+                    <input class="form-control" id="oauth-token" th:value="${oauthToken}"/>
+                </div>
+            </div>
+            <div class="row ">
+                <label class="col-sm-2 col-form-label" for="vpos-api-uri">Vpos Api Url</label>
+                <div class="col-sm-10">
+                    <input class="form-control" id="vpos-api-uri"
+                           value="http://10.10.10.57:12100"/>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card card-body">
+
+                <form>
+                    <div class="form-group align-middle">
+                        <label for="vpos-api-request">İstek Mesajı </label>
+                        <button class="btn btn-clipboard" data-clipboard-action="copy"
+                                data-clipboard-target="#json-display-request">📋
+                        </button>
+                        <textarea class="form-control" id="vpos-api-request" name="vpos-api-parameters"
+                                  style="display: none">
+                                </textarea>
+                    </div>
+                    <pre id="json-display-request"></pre>
+
+                </form>
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="card card-body">
+
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="onClickInstallmentQuery()" type="submit">Taksit Sorgula
+                    </button>
+                    <h4 class="float-right"><span class="badge"  id="vpos-installment-response-status" ></span></h4>
+                </div>
+
+                <div class="form-group" id="vpos-installment-response-form-group" style="display:none;">
+                    <textarea class="form-control" id="vpos-api-installment-response"
+                              name="vpos-api-installment-parameters"
+                              style="display: none">
+                                </textarea>
+                </div>
+                <pre id="json-display-installment-response"></pre>
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="card card-body">
+
+                <div class="form-group">
+                    <div class="btn-group">
+                        <button class="btn btn-primary active" onclick="onClickMasterpassSale()">Ödeme Yap</button>
+                        <button class="btn btn-primary" id="vpos-reverse-button"
+                                onclick="initializeReverseTransaction()" disabled="disabled">Reverse
+                        </button>
+                    </div>
+                    <h4 class="float-right"><span class="badge" id="vpos-response-status"></span></h4>
+                </div>
+                <div class="form-group" id="vpos-response-form-group" style="display:none;">
+                    <textarea id="vpos-api-response" name="vpos-api-parameters" class="form-control"
+                              style="display: none">
+                                </textarea>
+                </div>
+                <pre id="json-display-response"></pre>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script th:inline="javascript" type="text/javascript">
+
+        new ClipboardJS(".btn-clipboard");
+
+        var vposCommitPurchaseResponse = null;
+        var reverseRequestArray = [];
+        var reverseRequestEditor;
+
+        var jsonMessage = localStorage.getItem("vposApiRequest");
+        var editor = new JsonEditor("#json-display-request", JSON.parse(jsonMessage));
+        editor.load(JSON.parse(jsonMessage));
+
+        $('#json-display-request').on('focusout', function () {
+            var rawMessage = editor.get();
+            rawMessage.id = calculateOrderId(rawMessage.companyId, rawMessage.institutionId);
+            editor.load(rawMessage);
+        });
+
+        $('#orderItems').change(function () {
+            var selectedOrderIndex = Number($(this).val());
+
+            if (selectedOrderIndex === 0) {
+                $('#sendReverseRequestButton').attr("disabled", true);
+                reverseRequestEditor = new JsonEditor("#json-display-reverse-request", "Please select item...");
+            } else {
+                $('#sendReverseRequestButton').attr("disabled", false);
+                reverseRequestEditor = new JsonEditor("#json-display-reverse-request", reverseRequestArray[selectedOrderIndex - 1]);
+            }
+
+        });
+
+        function onClickVposReverse() {
+            var responseEditor = new JsonEditor("#json-display-reverse-response", "loading...");
+
+            reverseRequestEditor.get = function () {
+                try {
+                    return this.$container.find(".collapsed.json-toggle").click(), JSON.parse(this.$container.text())
+                } catch (o) {
+                    alert("Wrong JSON Format: " + o)
+                }
+            }
+
+            var params = {};
+
+            params.url = $("#vpos-api-uri").val() + '/reverse';
+            params.data = reverseRequestEditor.get();
+            params.oauthToken = $("#oauth-token").val();
+
+            sendVposApiRequest(params, vposReverseResponseHandler, vposReverseResponseHandler)
+        }
+
+        function onClickMasterpassSale() {
+            var responseEditor = new JsonEditor("#json-display-response", "loading...");
+            var params = {};
+
+            params.url = $("#vpos-api-uri").val() + '/sale/masterpass';
+            params.data = editor.get();
+            params.oauthToken = $("#oauth-token").val();
+
+            sendVposApiRequest(params, vposSaleResponseHandler, vposSaleResponseHandler)
+        }
+
+        function initializeReverseTransaction() {
+            reverseRequestArray = [];
+            reverseRequestEditor = new JsonEditor("#json-display-reverse-request", "Please select item...");
+            ;
+            new JsonEditor("#json-display-reverse-response", {});
+            $('#orderItems').empty().append('<option selected value="0">Ürün Seçiniz</option>');
+
+            var xmlData = atob(vposCommitPurchaseResponse["extras"]["masterpassPaymentProviderResponse"]);
+            var parsedXml = $($.parseXML(xmlData));
+
+
+            $('#masterpassPaymentProviderResponse').val(xmlData);
+
+            parsedXml.find("PaymentItems>PaymentItem").each(function (idx) {
+                reverseRequestArray.push(
+                    {
+                        amount: {
+                            currency: 949,
+                            total: $(this).children('PaidPrice').text()
+                        },
+                        bankId: vposCommitPurchaseResponse.bankId,
+                        companyId: vposCommitPurchaseResponse.companyId,
+                        groupId: uuid.v4(),
+                        id: calculateOrderId(vposCommitPurchaseResponse.companyId, vposCommitPurchaseResponse.institutionId),
+                        installment: parsedXml.children("Payment").children("Installment").text(),
+                        institutionId: vposCommitPurchaseResponse.institutionId,
+                        productId: vposCommitPurchaseResponse.productId,
+                        referenceId: vposCommitPurchaseResponse.id,
+                        reconDate: moment(new Date()).format(DASHED_DATE_FORMAT_YYYYDDMM),
+                        extras: {
+                            masterpassPaymentProvider: MASTERPASS_IYZICO_PAYMENT_PROVIDER,
+                            iyzicoTransactionId: $(this).children("PaymentTransactionId").text()
+                        }
+                    }
+                );
+
+                $("#orderItems").append(new Option("itemId: " + $(this).find("ItemId").text() +
+                    " / paymentTransactionId " + $(this).find("PaymentTransactionId").text(), idx + 1));
+            });
+
+            $('#collapseTwo').collapse('show');
+            $('#reverseModal').modal('show');
+        }
+
+        function vposSaleResponseHandler(data, textStatus) {
+            var editor = new JsonEditor("#json-display-response", data);
+
+            $("#vpos-response-form-group").css("display", "block");
+
+            $("#vpos-response-status").text(textStatus);
+
+            if (textStatus === 200) {
+                editor.load(data);
+                $("#vpos-response-status").addClass("badge-success");
+                $("#vpos-response-status").removeClass("badge-danger");
+            } else {
+                editor.load(data.responseJSON);
+                $("#vpos-response-status").addClass("badge-danger");
+                $("#vpos-response-status").removeClass("badge-success");
+            }
+            saleSuccessHandlerForReverse(data);
+
+        }
+
+        function vposReverseResponseHandler(data, textStatus) {
+            var editor = new JsonEditor("#json-display-reverse-response", data);
+
+            $("#vpos-reverse-response-text").text(textStatus);
+
+            if (textStatus === 200) {
+                editor.load(data);
+                $("#vpos-reverse-response-status").addClass("badge-success");
+                $("#vpos-reverse-response-status").removeClass("badge-danger");
+            } else {
+                editor.load(data.responseJSON);
+                $("#vpos-reverse-response-status").addClass("badge-danger");
+                $("#vpos-reverse-response-status").removeClass("badge-success");
+            }
+
+        }
+
+        function saleSuccessHandlerForReverse(saleResponse) {
+            vposCommitPurchaseResponse = saleResponse;
+            if (saleResponse.responseCode && saleResponse.responseCode === VPOS_RC_SUCCESS) {
+                $("#vpos-reverse-button").attr("disabled", false);
+            } else {
+                $("#vpos-reverse-button").attr("disabled", true);
+            }
+        }
+
+        function onClickInstallmentQuery() {
+            var responseEditor = new JsonEditor("#json-display-installment-response", "loading...");
+            var params = {};
+
+            var binNumber = editor.get().card.pan.substring(0, 6);
+            var currency = editor.get().amount.currency;
+            var price = editor.get().amount.total;
+            var locale = 'tr';
+
+            params.url = $("#vpos-api-uri").val() + '/ext/iyzicoInstallmentQuery';
+
+            params.data = {binNumber: binNumber, price: price, currency: null, locale: locale};
+
+            params.oauthToken = $("#oauth-token").val();
+
+            sendVposApiRequest(params, vposInstallmentQueryResponseHandler, vposInstallmentQueryResponseHandler)
+        }
+
+        function vposInstallmentQueryResponseHandler(data, textStatus) {
+            var editor = new JsonEditor("#json-display-installment-response", data);
+
+            $("#vpos-installment-response-form-group").css("display", "block");
+
+            $("#vpos-installment-response-status").text(textStatus);
+
+            if (textStatus === 200) {
+                editor.load(data);
+                $("#vpos-installment-response-status").addClass("badge-success");
+                $("#vpos-installment-response-status").removeClass("badge-danger");
+            } else {
+                editor.load(data.responseJSON);
+                $("#vpos-installment-response-status").addClass("badge-danger");
+                $("#vpos-installment-response-status").removeClass("badge-success");
+            }
+
+        }
+
+
+    </script>
+
+
+</section>
+</body>
+</html>

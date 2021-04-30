@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+</head>
+<body>
+
+<section layout:fragment="content" class="container">
+
+    <div class="modal fade" id="configModal" tabindex="-1" role="dialog" aria-labelledby="addCardModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCardModalTitle">Konfigürasyon Ekle</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Kapat">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="/configs" method="POST" id="configForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="id" name="id">
+                        <div class="form-group">
+                            <label for="clientId">Client ID</label>
+                            <input type="text" id="clientId" name="clientId" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="merchantId">Merchant ID</label>
+                            <input type="text" id="merchantId" name="merchantId" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="url">URL</label>
+                            <input type="text" id="url" name="url" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="encKey">ENC Key (HEX formatta) </label>
+                            <input type="text" id="encKey" name="encKey" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="macKey">MAC Key (HEX formatta)</label>
+                            <input type="text" id="macKey" name="macKey" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/configs">Vazgeç</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <div class="d-flex flex-nowrap no-gutters">
+            <div class="col-6">
+                <h5><a href="/">&lt;</a> Konfigürasyonlar</h5>
+            </div>
+            <div class="col-6 d-flex justify-content-end">
+                <button type="button" data-toggle="modal" data-target="#configModal" class="btn btn-secondary"
+                        role="button">Yeni Ekle
+                </button>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0">
+
+            <table class="table table-ellipsis no-gutters">
+                <tr>
+                    <th>#</th>
+                    <th>Client ID</th>
+                    <th>Merchant ID</th>
+                    <th class="flex-grow-1">URL</th>
+                    <th>ENC</th>
+                    <th>MAC</th>
+                    <th></th>
+                </tr>
+                <tr th:each="i : ${configs}">
+                    <td class="align-middle" scope="row" th:text="${i.id}"></td>
+                    <td class="align-middle" th:text="${i.clientId}"></td>
+                    <td class="align-middle" th:text="${i.merchantId}"></td>
+                    <td class="align-middle" th:text="${i.url}"></td>
+                    <td class="align-middle" th:text="${i.encKey}"></td>
+                    <td class="align-middle" th:text="${i.macKey}"></td>
+                    <td class="text-center align-middle">
+                        <button class="btn btn-link" th:data-config-id="${i.id}"
+                                th:data-config-client-id="${i.clientId}"
+                                th:data-config-merchant-id="${i.merchantId}" th:data-config-url="${i.url}"
+                                th:data-config-enc-key="${i.encKey}" th:data-config-mac-key="${i.macKey}"
+                                data-target="#configModal" data-toggle="modal">Düzenle
+                        </button>&nbsp;<a class="btn btn-link"
+                                          th:href="'/configs/delete/' + ${i.id}">Sil</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $('#configModal').on('shown.bs.modal', function (event) {
+            var b = $(event.relatedTarget);
+            var m = $(this);
+
+            if (b.data('config-id') !== 'undefined') {
+                m.find("#id").val(b.data('config-id'));
+                m.find("#clientId").val(b.data('config-client-id'));
+                m.find("#merchantId").val(b.data('config-merchant-id'));
+                m.find("#url").val(b.data('config-url'));
+                m.find("#encKey").val(b.data('config-enc-key'));
+                m.find("#macKey").val(b.data('config-mac-key'));
+            }
+        })
+    </script>
+
+</section>
+
+</body>
+</html>

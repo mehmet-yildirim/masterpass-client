@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterpass Client</title>
+</head>
+<body>
+
+<section layout:fragment="content">
+    <h5>MSISDN girişi</h5>
+    <form action="/" method="GET">
+        <div class="card card-body">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="msisdn">MSISDN (Başında 90 ile giriniz)</label>
+                    <input type="text" id="msisdn" name="msisdn" class="form-control  form-control-sm"
+                           placeholder="905001234567"/>
+                </div>
+                <div class="form-group">
+                    <label for="config">Konfigürasyon <a href="/configs">Yönet</a></label>
+                    <select name="config" id="config" class="form-control  form-control-sm">
+                        <option th:each="config : ${configList}" th:value="${config.key}" th:text="${config.value}"/>
+                    </select>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Devam et</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </form>
+</section>
+</body>
+</html>

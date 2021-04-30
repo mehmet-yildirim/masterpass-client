@@ -1,0 +1,40 @@
+.spinner-border {
+    display: inline-block;
+/ / vertical-align: text-bottom;
+    border: 0.6em solid #f3f3f3;
+    border-top: 0.6em solid #aaaaaa;
+    border-radius: 50%;
+    -webkit-animation: spinner-border 1s linear infinite;
+    animation: spinner-border 1s linear infinite
+}
+
+.spinner-border-sm {
+    width: 0.5rem;
+    height: 1rem;
+    border-width: .1em
+}
+
+.table.table-ellipsis tbody td {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.container {
+    margin-top: 30px;
+}
+
+
+.main-container {
+    margin-bottom: 50px;
+}
+
+
+.header-container {
+    margin-top: 0px !important;
+}
+
+tr#row-template {
+    display: none;
+}
